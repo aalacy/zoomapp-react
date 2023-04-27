@@ -2,10 +2,10 @@
 import { useLocation, useHistory } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { apis } from "./apis";
-import { Authorization } from "./components/Authorization";
-import ApiScrollview from "./components/ApiScrollview";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Recording } from "./components/Recording";
+import { RECORDING_STATUS } from "./util";
 
 let once = 0; // to prevent increasing number of event listeners being added
 
@@ -19,6 +19,61 @@ function App() {
   const [counter, setCounter] = useState(0);
   const [preMeeting, setPreMeeting] = useState(true); // start with pre-meeting code
   const [userContextStatus, setUserContextStatus] = useState("");
+  const [meetingContext, setMeetingContext] = useState(null);
+  const [recordingContext, setRecordingContext] = useState();
+
+  const getMeetingContext = useCallback(() => {
+    zoomSdk
+      .getMeetingContext()
+      .then((ctx) => {
+        console.log("Meeting Context", ctx);
+        setMeetingContext({
+          ...ctx,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }, []);
+
+  const getRecordingContext = (action) => {
+    let status = ""
+    switch (action) {
+      case "start":
+        status = RECORDING_STATUS.STARTED;
+        break
+      case "stop":
+        status = RECORDING_STATUS.STOPPED;
+        break
+      case "pause":
+        status = RECORDING_STATUS.PAUSED;
+        break
+    }
+    setRecordingContext({
+      status,
+    });
+    // not working at the moment
+    // zoomSdk
+    //   .getRecordingContext()
+    //   .then((ctx) => {
+    //     console.log("Recording Context", ctx);
+    //     setRecordingContext({
+    //       action: ctx.cloudRecordingStatus,
+    //     });
+    //   })
+    //   .catch((e) => {
+    //     console.log(e);
+    //   });
+  }
+
+  const watchCloudRecording = () => {
+    zoomSdk.onCloudRecording((event) => {
+      console.log('onCloudRecording ', onCloudRecording)
+      setRecordingContext({
+        ...event,
+      });
+    });
+  }
 
   useEffect(() => {
     async function configureSdk() {
@@ -35,26 +90,19 @@ function App() {
             // apis demoed in the buttons
             ...apis.map((api) => api.name), // IMPORTANT
 
-            // demo events
-            "onSendAppInvitation",
-            "onShareApp",
-            "onActiveSpeakerChange",
-            "onMeeting",
-
-            // connect api and event
+            "getRecordingContext",
+            "openUrl",
+            "getMeetingContext",
+            "cloudRecording",
+            "onCloudRecording",
             "connect",
             "onConnect",
+            "onMeeting",
             "postMessage",
             "onMessage",
-
-            // in-client api and event
             "authorize",
             "onAuthorized",
-            "promptAuthorize",
-            "getUserContext",
             "onMyUserContextChange",
-            "sendAppInvitationToAllParticipants",
-            "sendAppInvitation",
           ],
           version: "0.16.0",
         });
@@ -68,6 +116,8 @@ function App() {
         zoomSdk.onShareApp((data) => {
           console.log(data);
         });
+
+        watchCloudRecording()
       } catch (error) {
         console.log(error);
         setError("There was an error configuring the JS SDK");
@@ -136,6 +186,10 @@ function App() {
           console.log("Connected");
           setConnected(true);
 
+          getMeetingContext()
+
+          getRecordingContext()
+
           // PRE-MEETING
           // first message to send after connecting instances is for the meeting
           // instance to catch up with the client instance
@@ -192,24 +246,13 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Hello{user ? ` ${user.first_name} ${user.last_name}` : " Zoom Apps user"}!</h1>
-      <p>{`User Context Status: ${userContextStatus}`}</p>
-      <p>
-        {runningContext ?
-          `Running Context: ${runningContext}` :
-          "Configuring Zoom JavaScript SDK..."
-        }
-      </p>
-
-      <ApiScrollview />
-      <Authorization
-        handleError={setError}
-        handleUserContextStatus={setUserContextStatus}
-        handleUser={setUser}
-        user={user}
-        userContextStatus={userContextStatus}
+      <Recording 
+        connected={connected}
+        runningContext={runningContext}
+        meetingContext={meetingContext}
+        recordingContext={recordingContext}
+        getRecordingContext={getRecordingContext}
       />
-
     </div>
   );
 }

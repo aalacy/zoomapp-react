@@ -1,4 +1,5 @@
 const crypto = require('crypto')
+const KJUR = require('jsrsasign')
 
 module.exports = {
   afterSerialization(text) {
@@ -26,4 +27,27 @@ module.exports = {
     plaintextBytes = Buffer.concat([plaintextBytes, aes.final()])
     return plaintextBytes.toString()
   },
+
+  generateSignature(req) {
+    const iat = Math.round(new Date().getTime() / 1000) - 30;
+    const exp = iat + 60 * 60 * 2
+
+    const oHeader = { alg: 'HS256', typ: 'JWT' }
+
+    const oPayload = {
+      sdkKey: process.env.ZOOM_MEETING_SDK_KEY,
+      mn: req.body.meetingNumber,
+      role: req.body.role,
+      iat,
+      exp,
+      appKey: process.env.ZOOM_MEETING_SDK_KEY,
+      tokenExp: iat + 60 * 60 * 2
+    }
+
+    const sHeader = JSON.stringify(oHeader)
+    const sPayload = JSON.stringify(oPayload)
+    const signature = KJUR.jws.JWS.sign('HS256', sHeader, sPayload, process.env.ZOOM_MEETING_SDK_SECRET)
+
+    return signature;
+  }
 }

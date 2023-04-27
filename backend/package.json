@@ -17,6 +17,7 @@
     "express": "^4.18.2",
     "express-session": "^1.17.1",
     "http-proxy-middleware": "^1.0.6",
+    "jsrsasign": "^10.5.25",
     "jwt-decode": "^3.1.2",
     "morgan": "^1.10.0",
     "pug": "^3.0.2-canary-5",

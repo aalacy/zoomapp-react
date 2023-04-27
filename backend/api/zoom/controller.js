@@ -11,7 +11,7 @@ module.exports = {
 
     onProxyRes: function (proxyRes, req, res) {
       console.log(
-        'ZOOM API PROXY ==============================================',
+        'ZOOM API PROXY ',
         '\n'
       )
 

@@ -9,5 +9,7 @@ router
   .get('/home', controller.home)
   .get('/authorize', controller.inClientAuthorize)
   .post('/onauthorized', controller.inClientOnAuthorized)
+  .get('/recording', controller.recording)
+  .post('/generate-signature', controller.generateSignatureForMeeting)
 
 module.exports = router

@@ -2,6 +2,8 @@ const { createProxyMiddleware } = require('http-proxy-middleware')
 const zoomApi = require('../../util/zoom-api')
 const zoomHelpers = require('../../util/zoom-helpers')
 const store = require('../../util/store')
+const { generateSignature } = require('../../util/encrypt')
+const { submitRecording } = require('../../util/custom-api')
 
 module.exports = {
   // In-client OAuth 1/2
@@ -271,6 +273,29 @@ module.exports = {
     // 3. Redirect to frontend
     console.log('3. Redirect to frontend', '\n')
     res.redirect('/api/zoomapp/proxy')
+  },
+
+  generateSignatureForMeeting(req, res, next) {
+    try {
+      const signature = generateSignature(req)
+      res.json({
+        signature: signature
+      })
+    } catch (error) {
+      return next(error)
+    }
+  },
+
+  async recording(req, res, next) {
+    try {
+      const { data } = await submitRecording(req)
+      console.log('data', data)
+      res.json({
+        ...data
+      })
+    } catch (error) {
+      return next(error)
+    }
   },
 
   // FRONTEND PROXY ===========================================================
