@@ -53,7 +53,7 @@ The following are steps to take in each of the tabs in the build flow . . .
 If you enabled the "List app on Marketplace to be added by any Zoom user" toggle while creating your app on the Marketplace, you will see the following two sections: Development and Production.
 Note: The above option should only be selected if you intend to publish the app to the marketplace. This option can be enabled later as well under the "Activation" tab. The "Activation" tab only appears if you have not selected to list the app to be published 
 
-`your Ngrok origin` = ie. `https://9a20-38-99-100-7.ngrok.io`
+`your Ngrok origin` for http port 3000 = ie. `https://9a20-38-99-100-7.ngrok.io`
 Follow these instructions for the "Development" section
 - Add `<your Ngrok origin>/api/zoomapp/home` in the Home URL field
 - Copy and paste your Client ID and Client secret (from the "Development" section, not "Production" section) into the `.env` file for this application
@@ -65,6 +65,8 @@ Follow these instructions for the "Development" section
 - Add the SDK url `appssdk.zoom.us` in the Domain allow list
 - Add `images.unsplash.com` to the Domain allow list
 - Add any other required domains (eg `my-cdn.example.com`) in the Domain allow list*
+
+`Another Ngrok origin` for http port 8000. copy it to `SERVER_URL` at the bottom in .env file
 
 *Important: All requests to domains **NOT** in the Domain allow list in the app's Marketplace build flow will be blocked in the Zoom Apps embedded browser
 
